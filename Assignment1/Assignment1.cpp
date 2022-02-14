@@ -14,6 +14,7 @@
 #include "Shapes.h"
 #include "Colors.h"
 #include "Constants.h"
+#include "Intersection.h"
 
 #define MAX_LOADSTRING 100
 
@@ -26,21 +27,24 @@ HINSTANCE hInst;                                // current instance
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 
-const int ROAD_WIDTH = 50;
+RECT screensize;                                // screen size
+bool** states;                                  // array storing traffic light states
+int westState = 0;                              // tracking of west road light state
+int northState = 2;                             // tracking of north road light state
+int state = 0;                                  // overall state tracker
+int change = 0;
 
-bool** states;
-int westState = 0;
-int northState = 2;
+std::list<Road> roads; 
+std::list<Road>::iterator road_it;
+std::list<Car> carsNorth;
+std::list<Car> carsWest;
+std::list<Car>::iterator car_it;
+Intersection intersection;
+Road roadNorth;
+Road roadWest;
 
-bool redState[] = { TRUE, FALSE, FALSE };
-bool readyState[] = { TRUE, TRUE, FALSE};
-bool greenState[] = { FALSE, FALSE, TRUE};
-bool stoppingState[] = {FALSE, TRUE, FALSE};
-
-std::list<Car> cars;
-std::list<Car>::iterator it;
-int pw = 10;
-int pn = 10;
+int pw = 10;                                    // spawn rate probability for west road
+int pn = 10;                                    // spawn rate probability for north road
 
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -51,10 +55,8 @@ INT_PTR CALLBACK    SpawnRateDialog(HWND, UINT, WPARAM, LPARAM);
 
 void DrawCars(HDC* hdc, RECT &rc, std::list<Car> cars, std::list<Car>::iterator it);
 void ChangeLightStates();
+void UpdateCars(HWND Hwnd, std::list<Car> cars, std::list<Car>::iterator it);
 
-int state = 0;
-int change = 0;
-WCHAR dialogText[4];
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -144,11 +146,21 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
       return FALSE;
    }
 
+   GetClientRect(hWnd, &screensize);
+
    states = new bool* [4];
    states[0] = redState;
    states[1] = readyState;
    states[2] = greenState;
    states[3] = stoppingState;
+
+   roadNorth = Road(carsNorth, pn);
+   roadWest = Road(carsWest, pw);
+
+   roads.push_front(roadNorth);
+   roads.push_front(roadWest);
+
+   intersection = Intersection(roads, state);
 
    SetTimer(hWnd, IDT_TRAFFICLIGHTTIMER, 3000, (TIMERPROC)NULL);
    SetTimer(hWnd, IDT_CARSPAWNTIMER, 1000, (TIMERPROC)NULL);
@@ -204,8 +216,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 InvalidateRect(hWnd, NULL, false);
                 break;
             case IDT_CARUPDATETIMER:
-                GetClientRect(hWnd, &rc);
-                for (it = cars.begin(); it != cars.end(); ++it)
+                GetClientRect(hWnd, &screensize);
+                UpdateCars(hWnd, carsNorth, car_it);
+                UpdateCars(hWnd, carsWest, car_it);
+                /*
+                for (car_it = cars.begin(); car_it != cars.end(); ++it)
                 {
                     if (it-> y > rc.bottom - 10 || it->x > rc.right - 10)
                     {
@@ -246,7 +261,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                             if (it->x + 40 >= next->x && it->y == next->y)
                                 continue;
                         }
-                        if (state == 0 || state == 1)
+                        if (intersection.state == 0 || state == 1)
                         {
                             it->Move();
                             InvalidateRect(hWnd, 0, false);
@@ -261,31 +276,41 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                         }
                     }
                 }
+                */
                 InvalidateRect(hWnd, NULL, false);
                 break;
             case IDT_CARSPAWNTIMER:
                 RECT rc;
-                GetClientRect(hWnd, &rc);
+                GetClientRect(hWnd, &screensize);
 
-                std::random_device rd; // initialise seed
-                std::mt19937 rng(rd()); // Mersenne-Twister random-number engine
-                std::uniform_int_distribution<int> p(0, 100); // probability of spawn
+                std::random_device rd;                          // initialise seed
+                std::mt19937 rng(rd());                         // Mersenne-Twister random-number engine
+                std::uniform_int_distribution<int> p(0, 100);   // probability of spawn
                 std::uniform_int_distribution<int> speed(3, 7); // car speed interval
-                std::uniform_int_distribution<int> lane(0, 1); // car lane spawn
+                std::uniform_int_distribution<int> lane(0, 1);  // car lane spawn
                 auto randWest = p(rng);
                 auto randNorth = p(rng);
+
+                for (road_it = roads.begin(); road_it != roads.end(); ++road_it)
+                {
+                    Road road = *road_it;
+                    auto prob = p(rng);
+                    if (prob <= road.p)
+                        road.cars.push_front(Car(10, 10, false));
+                }
+                /* old spawn logic
                 if (randWest <= pw)
                 {
                     int spawn = lane(rng);
                     int y = 0;
                     if (spawn == 0)
                     {
-                        y = (rc.bottom / 2) - 25;
+                        y = (screensize.bottom / 2) - 25;
                     }
                     else {
-                        y = (rc.bottom / 2) + 25;
+                        y = (screensize.bottom / 2) + 25;
                     }
-                    cars.push_front(Car(10, y, speed(rng), false));
+                    carsWest.push_front(Car(10, y, false));
                 }
                 if (randNorth <= pn)
                 {
@@ -293,13 +318,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                     int x = 0;
                     if (spawn == 0)
                     {
-                        x = (rc.right / 2) - 25;
+                        x = (screensize.right / 2) - 25;
                     }
                     else {
-                        x = (rc.right / 2) + 25;
+                        x = (screensize.right / 2) + 25;
                     }
-                    cars.push_front(Car(x, 10, speed(rng), true));
+                    carsNorth.push_front(Car(x, 10, true));
                 }
+                */
                 break;
             }
        }
@@ -311,7 +337,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             RECT rc;
             GetClientRect(hWnd, &rc);
             
-            
             HDC hdc = CreateCompatibleDC(phdc);
             HBITMAP bm = CreateCompatibleBitmap(phdc, rc.right, rc.bottom);
             SelectObject(hdc, bm);
@@ -319,13 +344,20 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             HBRUSH bg = CreateSolidBrush(RGB(255, 255, 255));
             HGDIOBJ hOrg = SelectObject(hdc, bg);
             Rect(&hdc, 0, 0, rc.right, rc.bottom, RGB(255, 255, 255));
-           
+            
+            intersection.DrawRoads(&hdc, screensize);
+            DrawTrafficLight(&hdc, rc, -60, -60, states[westState]);
+            DrawTrafficLight(&hdc, rc, -60, 310, states[northState]);
+            roadNorth.DrawCars(&hdc, screensize);
+            roadWest.DrawCars(&hdc, screensize);
 
+            /* old drawing logic
             DrawRoads(&hdc, rc);
             DrawTrafficLight(&hdc, rc, -60, -60, states[westState]);
             DrawTrafficLight(&hdc, rc, -60, 310, states[northState]);
             DrawCars(&hdc, rc, cars, it);
-            
+            */
+
             BitBlt(phdc, 0, 0, rc.right, rc.bottom, hdc, 0, 0, SRCCOPY);
 
             DeleteObject(bg);
@@ -373,6 +405,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         break;
     }
+    case WM_SIZE:
+        GetClientRect(hWnd, &screensize);
+        InvalidateRect(hWnd, 0, false);
+        break;
+    case WM_SIZING:
+        GetClientRect(hWnd, &screensize);
+        InvalidateRect(hWnd, 0, false);
+        break;
     case WM_DESTROY:
         KillTimer(hWnd, 0);
         KillTimer(hWnd, 1);
@@ -403,6 +443,66 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         break;
     }
     return (INT_PTR)FALSE;
+}
+
+void UpdateCars(HWND hWnd, std::list<Car> cars, std::list<Car>::iterator it)
+{
+    for (it = cars.begin(); it != cars.end(); ++it)
+    {
+        if (it->y > screensize.bottom - 10 || it->x > screensize.right - 10)
+        {
+            cars.erase(it);
+            break;
+        }
+        auto it2 = it;
+        it2++;
+        if (it->direction)
+        {
+            auto next = std::find_if(it2, cars.end(), [](auto& c) {return c.direction; });
+            if (next != end(cars) && it->direction)
+            {
+                if (it->y + 40 >= next->y && it->x == next->x)
+                {
+                    continue;
+                }
+            }
+            if (state == 2 || state == 3)
+            {
+                it->Move();
+                InvalidateRect(hWnd, 0, false);
+            }
+            else
+            {
+                if (it->y < (screensize.bottom / 2) - ROAD_WIDTH - 20 || it->y >(screensize.bottom / 2) + ROAD_WIDTH)
+                {
+                    it->Move();
+                    InvalidateRect(hWnd, 0, false);
+                }
+            }
+        }
+        else
+        {
+            auto next = std::find_if(it2, cars.end(), [](auto& c) { return !c.direction; });
+            if (next != end(cars) && !it->direction)
+            {
+                if (it->x + 40 >= next->x && it->y == next->y)
+                    continue;
+            }
+            if (intersection.state == 0 || state == 1)
+            {
+                it->Move();
+                InvalidateRect(hWnd, 0, false);
+            }
+            else
+            {
+                if (it->x < (screensize.right / 2) - ROAD_WIDTH - 20 || it->x >(screensize.right / 2) + ROAD_WIDTH)
+                {
+                    it->Move();
+                    InvalidateRect(hWnd, 0, false);
+                }
+            }
+        }
+    }
 }
 
 void DrawCars(HDC* hdc, RECT &rc, std::list<Car> cars, std::list<Car>::iterator it)

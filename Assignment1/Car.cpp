@@ -1,9 +1,8 @@
 #include "Car.h"
 
-Car::Car(int x, int y, int speed, bool direction) {
+Car::Car(int x, int y, bool direction) {
 	this->x = x;
 	this->y = y;
-	this->speed = speed;
 	this->direction = direction;
 }
 
@@ -13,9 +12,9 @@ void Car::Move()
 {
 	if (direction)
 	{
-		y += speed;
+		y += MOVESPEED;
 	}
 	else {
-		x += speed;
+		x += MOVESPEED;
 	}
 }

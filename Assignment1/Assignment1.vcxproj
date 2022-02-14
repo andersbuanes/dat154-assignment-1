@@ -145,6 +145,7 @@
     <ClInclude Include="Constants.h" />
     <ClInclude Include="Draw.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="Intersection.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Road.h" />
     <ClInclude Include="Shapes.h" />
@@ -156,9 +157,9 @@
     <ClCompile Include="Assignment1.cpp" />
     <ClCompile Include="Car.cpp" />
     <ClCompile Include="Draw.cpp" />
+    <ClCompile Include="Intersection.cpp" />
     <ClCompile Include="Road.cpp" />
     <ClCompile Include="Shapes.cpp" />
-    <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="TrafficLight.cpp" />
   </ItemGroup>
   <ItemGroup>

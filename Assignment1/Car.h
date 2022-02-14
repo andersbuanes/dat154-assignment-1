@@ -5,14 +5,13 @@
 class Car
 {
 public:
-	Car(int x, int y, int speed, bool direction);
+	Car(int x, int y, bool direction);
 	~Car();
 
 	void Move();
 
 	int x;
 	int y;
-	int speed;
-	bool direction; // true if driving south, else false
+	bool direction; // true if driving south or east, else false
 };
 
