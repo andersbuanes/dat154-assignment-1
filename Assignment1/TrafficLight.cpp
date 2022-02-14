@@ -1,15 +1,21 @@
 #include "TrafficLight.h"
 
-const bool redState[] = { TRUE, FALSE, FALSE };
-const bool readyState[] = { TRUE, TRUE, FALSE };
-const bool greenState[] = { FALSE, FALSE, TRUE };
-const bool stoppingState[] = { FALSE, TRUE, FALSE };
+TrafficLight::TrafficLight() {}
 
 TrafficLight::TrafficLight(int x, int y, bool state[])
 {
 	this->x = x;
 	this->y = y;
-	this->state = state;
+	this->state[0] = state[0];
+	this->state[1] = state[1];
+	this->state[2] = state[2];
+}
+
+void TrafficLight::ChangeState(bool state[])
+{
+	this->state[0] = state[0];
+	this->state[1] = state[1];
+	this->state[2] = state[2];
 }
 
 void TrafficLight::DrawTrafficLight(HDC* hdc, RECT& rc, bool state[])

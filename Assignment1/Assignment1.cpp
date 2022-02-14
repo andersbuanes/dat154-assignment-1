@@ -34,12 +34,19 @@ int northState = 2;                             // tracking of north road light 
 int state = 0;                                  // overall state tracker
 int change = 0;
 
+bool redState[] = { TRUE, FALSE, FALSE };
+bool readyState[] = { TRUE, TRUE, FALSE };
+bool greenState[] = { FALSE, FALSE, TRUE };
+bool stoppingState[] = { FALSE, TRUE, FALSE };
+
 std::list<Road> roads; 
 std::list<Road>::iterator road_it;
 std::list<Car> carsNorth;
 std::list<Car> carsWest;
 std::list<Car>::iterator car_it;
 Intersection intersection;
+TrafficLight lightNorth;
+TrafficLight lightWest;
 Road roadNorth;
 Road roadWest;
 
@@ -154,8 +161,11 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    states[2] = greenState;
    states[3] = stoppingState;
 
-   roadNorth = Road(carsNorth, pn);
-   roadWest = Road(carsWest, pw);
+   lightNorth = TrafficLight(250, 90, states[northState]);
+   lightWest = TrafficLight(250, 90, states[westState]);
+
+   roadNorth = Road(carsNorth, lightNorth, pn);
+   roadWest = Road(carsWest, lightWest, pw);
 
    roads.push_front(roadNorth);
    roads.push_front(roadWest);

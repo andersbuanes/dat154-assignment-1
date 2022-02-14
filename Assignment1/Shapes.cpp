@@ -10,7 +10,8 @@ void Rect(HDC* hdc, int left, int top, int right, int bottom, COLORREF color)
 	rc.top = top;
 	rc.right = right;
 	rc.bottom = bottom;
-	FillRect(*hdc, &rc, hBrush);
+	RoundRect(*hdc, left, top, right, bottom, 10, 10);
+	//FillRect(*hdc, &rc, hBrush);
 	SelectObject(*hdc, hOrg);
 	DeleteObject(hBrush);
 	DeleteObject(hOrg);

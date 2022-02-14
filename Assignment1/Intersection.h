@@ -10,10 +10,11 @@
 class Intersection
 {
 public:
-	Intersection(std::list<Road> roads, int state);
-
 	std::list<Road> roads;
 	int state;
+
+	Intersection();
+	Intersection(std::list<Road> roads, int state);
 
 	void DrawRoads(HDC* hdc, RECT &rc);
 	void ChangeLightState();

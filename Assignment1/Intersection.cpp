@@ -1,5 +1,7 @@
 #include "Intersection.h"
 
+Intersection::Intersection() {}
+
 Intersection::Intersection(std::list<Road> roads, int state)
 {
 	this->roads = roads;
@@ -11,10 +13,16 @@ void Intersection::DrawRoads(HDC* hdc, RECT &rc)
 	int X = rc.right / 2;
 	int Y = rc.bottom / 2;
 
+	// Draw roads
+	Rect(hdc, 10, Y - ROAD_WIDTH, rc.right - 10, Y + ROAD_WIDTH, Colors::ASPHALTGREY);
+	Rect(hdc, X - ROAD_WIDTH, 10, X + ROAD_WIDTH, rc.bottom - 10, Colors::ASPHALTGREY);
 
+	// Draw lane dividers
+	Line(hdc, 10, Y, rc.right - 10, Y, Colors::DIVIDERYELLOW);
+	Line(hdc, X, 10, X, rc.bottom - 10, Colors::DIVIDERYELLOW);
 
 	// Draw intersection
-	Rect(hdc, X - 50, Y - 50, X + 50, Y + 50, Colors::ASPHALTGREY);
+	Rect(hdc, X - ROAD_WIDTH, Y - ROAD_WIDTH, X + ROAD_WIDTH, Y + ROAD_WIDTH, Colors::INTERSECTIONGREY);
 }
 
 void Intersection::ChangeLightState()

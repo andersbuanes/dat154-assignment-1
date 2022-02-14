@@ -1,8 +1,11 @@
 #include "Road.h"
 
-Road::Road(std::list<Car> cars, int p)
+Road::Road() {}
+
+Road::Road(std::list<Car> cars, TrafficLight trafficLight, int p) : trafficLight(trafficLight)
 {
 	this->cars = cars;
+	this->trafficLight = trafficLight;
 	this->p = p;
 }
 
