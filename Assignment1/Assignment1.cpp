@@ -15,6 +15,7 @@
 #include "Colors.h"
 #include "Constants.h"
 #include "Intersection.h"
+#include "Direction.h"
 
 #define MAX_LOADSTRING 100
 
@@ -39,8 +40,10 @@ bool readyState[] = { TRUE, TRUE, FALSE };
 bool greenState[] = { FALSE, FALSE, TRUE };
 bool stoppingState[] = { FALSE, TRUE, FALSE };
 
-int pw = 10;                                    // spawn rate probability for west road
 int pn = 10;                                    // spawn rate probability for north road
+int pe = 10;                                    // spawn rate probability for east road
+int pw = 10;                                    // spawn rate probability for west road
+int ps = 10;                                    // spawn rate probability for south road
 
 std::list<Road> roads; 
 std::list<Road>::iterator road_it;
@@ -230,8 +233,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 break;
             case IDT_CARUPDATETIMER:
                 GetClientRect(hWnd, &screensize);
-                UpdateCars(hWnd, carsNorth, car_it);
-                UpdateCars(hWnd, carsWest, car_it);
+                roadNorth.MoveCars(hWnd, screensize);
+                roadWest.MoveCars(hWnd, screensize);
                 /*
                 for (car_it = cars.begin(); car_it != cars.end(); ++it)
                 {
@@ -304,14 +307,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 auto randWest = p(rng);
                 auto randNorth = p(rng);
 
-                for (road_it = roads.begin(); road_it != roads.end(); ++road_it)
-                {
-                    Road road = *road_it;
-                    auto prob = p(rng);
-                    if (prob <= road.p)
-                        road.cars.push_front(Car(10, 10, false));
-                }
-                /* old spawn logic
                 if (randWest <= pw)
                 {
                     int spawn = lane(rng);
@@ -323,7 +318,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                     else {
                         y = (screensize.bottom / 2) + 25;
                     }
-                    carsWest.push_front(Car(10, y, false));
+                    roadWest.cars.push_front(Car(10, y, EAST, RGB(rand() % 255, rand() % 255, rand() % 255)));
                 }
                 if (randNorth <= pn)
                 {
@@ -336,9 +331,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                     else {
                         x = (screensize.right / 2) + 25;
                     }
-                    carsNorth.push_front(Car(x, 10, true));
+                    roadNorth.cars.push_front(Car(x, 10, SOUTH, RGB(rand() % 255, rand() % 255, rand() % 255)));
                 }
-                */
                 break;
             }
        }

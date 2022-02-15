@@ -6,6 +6,7 @@
 #include "Colors.h"
 #include "Constants.h"
 #include "TrafficLight.h"
+#include "Direction.h"
 
 class Road
 {
@@ -18,5 +19,6 @@ public:
 	Road(std::list<Car> cars, TrafficLight trafficLight, int p);
 
 	void DrawCars(HDC* hdc, RECT &rc);
+	void MoveCars(HWND hWnd, RECT &rc);
 };
 

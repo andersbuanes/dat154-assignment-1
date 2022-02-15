@@ -1,6 +1,13 @@
 #include "TrafficLight.h"
 
-TrafficLight::TrafficLight() {}
+TrafficLight::TrafficLight() 
+{
+	this->height = 0;
+	this->width = 0;
+	this->state[0] = FALSE;
+	this->state[1] = FALSE;
+	this->state[2] = FALSE;
+}
 
 TrafficLight::TrafficLight(int height, int width, bool state[])
 {

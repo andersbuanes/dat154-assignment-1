@@ -1,17 +1,25 @@
 #pragma once
 
+#include "stdafx.h"
+#include "Constants.h"
+#include "Shapes.h"
+#include "Direction.h"
+
 #define MOVESPEED 3;
 
 class Car
 {
 public:
-	Car(int x, int y, bool direction);
+	int x;
+	int y;
+	Direction direction; // true if driving south or east, else false
+	COLORREF color;
+
+	Car(int x, int y, Direction direction, COLORREF color);
 	~Car();
 
 	void Move();
+	void DrawCar(HDC hdc, RECT &rc);
 
-	int x;
-	int y;
-	bool direction; // true if driving south or east, else false
 };
 
