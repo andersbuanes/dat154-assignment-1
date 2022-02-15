@@ -43,17 +43,21 @@ bool stoppingState[] = { FALSE, TRUE, FALSE };
 int pn = 10;                                    // spawn rate probability for north road
 int pe = 10;                                    // spawn rate probability for east road
 int pw = 10;                                    // spawn rate probability for west road
-int ps = 10;                                    // spawn rate probability for south road
+int pso = 10;                                    // spawn rate probability for south road
 
 std::list<Road> roads; 
 std::list<Road>::iterator road_it;
 std::list<Car> carsNorth;
+std::list<Car> carsEast;
+std::list<Car> carsSouth;
 std::list<Car> carsWest;
 std::list<Car>::iterator car_it;
 Intersection intersection;// = Intersection(roads, state);
 TrafficLight lightNorth;// = TrafficLight(200, 70, states[northState]);
 TrafficLight lightWest;// = TrafficLight(200, 70, states[westState]);
 Road roadNorth;// = Road(carsNorth, lightNorth, pn);
+Road roadEast;
+Road roadSouth;
 Road roadWest;// = Road(carsWest, lightWest, pw);
 
 // Forward declarations of functions included in this code module:
@@ -62,6 +66,7 @@ BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    SpawnRateDialog(HWND, UINT, WPARAM, LPARAM);
+INT_PTR CALLBACK    ProbabilityDialog(HWND, UINT, WPARAM, LPARAM);
 
 void DrawCars(HDC* hdc, RECT &rc, std::list<Car> cars, std::list<Car>::iterator it);
 void ChangeLightStates();
@@ -168,15 +173,14 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    lightWest = TrafficLight(200, 70, states[westState]);
 
    roadNorth = Road(carsNorth, lightNorth, pn);
+   roadEast = Road(carsEast, lightWest, pe);
+   roadSouth = Road(carsSouth, lightNorth, pso);
    roadWest = Road(carsWest, lightWest, pw);
 
    roads.push_front(roadNorth);
    roads.push_front(roadWest);
 
    intersection = Intersection(roads, state);
-
-   roads.push_front(roadNorth);
-   roads.push_front(roadWest);
 
    SetTimer(hWnd, IDT_TRAFFICLIGHTTIMER, 3000, (TIMERPROC)NULL);
    SetTimer(hWnd, IDT_CARSPAWNTIMER, 1000, (TIMERPROC)NULL);
@@ -202,6 +206,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {   
     switch (message)
     {
+    case WM_CREATE:
+        DialogBox(hInst, MAKEINTRESOURCE(IDD_DIALOG1), hWnd, ProbabilityDialog);
     case WM_COMMAND:
         {
             int wmId = LOWORD(wParam);
@@ -234,6 +240,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             case IDT_CARUPDATETIMER:
                 GetClientRect(hWnd, &screensize);
                 roadNorth.MoveCars(hWnd, screensize);
+                roadEast.MoveCars(hWnd, screensize);
+                roadSouth.MoveCars(hWnd, screensize);
                 roadWest.MoveCars(hWnd, screensize);
                 /*
                 for (car_it = cars.begin(); car_it != cars.end(); ++it)
@@ -304,34 +312,31 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 std::uniform_int_distribution<int> p(0, 100);   // probability of spawn
                 std::uniform_int_distribution<int> speed(3, 7); // car speed interval
                 std::uniform_int_distribution<int> lane(0, 1);  // car lane spawn
-                auto randWest = p(rng);
                 auto randNorth = p(rng);
-
+                auto randEast = p(rng);
+                auto randSouth = p(rng);
+                auto randWest = p(rng);
+                
+                if (randNorth <= pn)
+                {
+                    int x = (screensize.right / 2) - 25;
+                    roadNorth.cars.push_front(Car(x, 10, SOUTH, RGB(rand() % 255, rand() % 255, rand() % 255)));
+                }
+                if (randEast <= pe)
+                {
+                    int y = (screensize.bottom / 2) - 25;
+                    roadNorth.cars.push_front(Car(screensize.right - 10, y, WEST, RGB(rand() % 255, rand() % 255, rand() % 255)));
+                }
+                if (randSouth <= pso)
+                {
+                    int x = (screensize.right / 2) + 25;
+                    roadNorth.cars.push_front(Car(x, screensize.bottom - 10, NORTH, RGB(rand() % 255, rand() % 255, rand() % 255)));
+                }
                 if (randWest <= pw)
                 {
                     int spawn = lane(rng);
-                    int y = 0;
-                    if (spawn == 0)
-                    {
-                        y = (screensize.bottom / 2) - 25;
-                    }
-                    else {
-                        y = (screensize.bottom / 2) + 25;
-                    }
+                    int y = (screensize.bottom / 2) + 25;
                     roadWest.cars.push_front(Car(10, y, EAST, RGB(rand() % 255, rand() % 255, rand() % 255)));
-                }
-                if (randNorth <= pn)
-                {
-                    int spawn = lane(rng);
-                    int x = 0;
-                    if (spawn == 0)
-                    {
-                        x = (screensize.right / 2) - 25;
-                    }
-                    else {
-                        x = (screensize.right / 2) + 25;
-                    }
-                    roadNorth.cars.push_front(Car(x, 10, SOUTH, RGB(rand() % 255, rand() % 255, rand() % 255)));
                 }
                 break;
             }
@@ -374,6 +379,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             DrawTrafficLight(&hdc, rc, -60, 310, states[northState]);
             DrawCars(&hdc, rc, cars, it);
             */
+
+            WCHAR txt[100];
+            wsprintf(txt, L"pw: %d%%\r\npn: %d%%\r\npe: %d%%\r\nps: %d%%\r\n", pw, pn, pe, pso);
+            DrawText(hdc, txt, lstrlen(txt), &rc, DT_LEFT);
 
             BitBlt(phdc, 0, 0, rc.right, rc.bottom, hdc, 0, 0, SRCCOPY);
 
@@ -455,6 +464,65 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
     case WM_COMMAND:
         if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
+        {
+            EndDialog(hDlg, LOWORD(wParam));
+            return (INT_PTR)TRUE;
+        }
+        break;
+    }
+    return (INT_PTR)FALSE;
+}
+
+INT_PTR CALLBACK ProbabilityDialog(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    UNREFERENCED_PARAMETER(lParam);
+    switch (message)
+    {
+    case WM_INITDIALOG:
+    {
+        HWND hStaticText1 = GetDlgItem(hDlg, IDC_STATICTEXT1);
+        HWND hStaticText2 = GetDlgItem(hDlg, IDC_STATICTEXT2);
+        HWND hStaticText3 = GetDlgItem(hDlg, IDC_STATICTEXT3);
+        HWND hStaticText4 = GetDlgItem(hDlg, IDC_STATICTEXT4);
+        HWND hStaticText5 = GetDlgItem(hDlg, IDC_STATICTEXT5);
+        SetWindowText(hStaticText1, L"Probability of car spawning west->east: (0-110)");
+        SetWindowText(hStaticText1, L"Probability of car spawning north->south: (0-110)");
+        SetWindowText(hStaticText1, L"");
+        SetWindowText(hStaticText1, L"Probability of car spawning east->west: (0-110)");
+        SetWindowText(hStaticText1, L"Probability of car spawning south->north: (0-110)");
+        return (INT_PTR)TRUE;
+    }
+    case WM_COMMAND:
+        if (LOWORD(wParam) == IDOK)
+        {
+            BOOL var1 = true;
+            int val1 = GetDlgItemInt(hDlg, IDC_EDIT1, &var1, false);
+            BOOL var2 = true;
+            int val2 = GetDlgItemInt(hDlg, IDC_EDIT1, &var2, false);
+            BOOL var3 = true;
+            int val3 = GetDlgItemInt(hDlg, IDC_EDIT1, &var3, false);
+            BOOL var4 = true;
+            int val4 = GetDlgItemInt(hDlg, IDC_EDIT1, &var4, false);
+            HWND hStaticText3 = GetDlgItem(hDlg, IDC_STATICTEXT3);
+            if (var1 == FALSE || var2 == FALSE || var3 == FALSE || var4 == FALSE)
+            {
+                SetWindowText(hStaticText3, L"Not a valid number.");
+            }
+            else if (val1 > 100 || val1 < 0 || val2 > 100 || val2 < 0 || val3 > 100 || val3 < 0 || val4 > 100 || val4 < 0)
+            {
+                SetWindowText(hStaticText3, L"Number has to be in range (0, 100)");
+            }
+            else
+            {
+                pw = val1;
+                pn = val2;
+                pe = val3;
+                pso = val4;
+                EndDialog(hDlg, LOWORD(wParam));
+                return (INT_PTR)TRUE;
+            }
+        }
+        else if (LOWORD(wParam) == IDCANCEL)
         {
             EndDialog(hDlg, LOWORD(wParam));
             return (INT_PTR)TRUE;

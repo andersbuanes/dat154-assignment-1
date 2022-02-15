@@ -22,6 +22,8 @@ void Road::DrawCars(HDC* hdc, RECT &rc)
 
 void Road::MoveCars(HWND hWnd, RECT &rc)
 {
+	// TODO implement direction based movement
+	// TODO fix light stop position/condition
 	std::list<Car>::iterator it;
 	const auto end = cars.end();
 
@@ -32,11 +34,11 @@ void Road::MoveCars(HWND hWnd, RECT &rc)
 			cars.erase(it);
 			break;
 		}
-		auto it2 = it;
-		it2++;
-		auto next = std::find_if(it2, end, [](auto& c) { return c.direction; });
+		auto next = it;
+		next++;
 		if (next != end)
 		{
+			// TODO fix collision detection
 			bool wouldCollideX = it->x + CAR_WIDTH + 10 >= next->x && it->y == next->y;
 			bool wouldCollideY = it->y + CAR_HEIGHT + 10 >= next->y && it->x == next->x;
 			
