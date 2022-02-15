@@ -39,19 +39,19 @@ bool readyState[] = { TRUE, TRUE, FALSE };
 bool greenState[] = { FALSE, FALSE, TRUE };
 bool stoppingState[] = { FALSE, TRUE, FALSE };
 
+int pw = 10;                                    // spawn rate probability for west road
+int pn = 10;                                    // spawn rate probability for north road
+
 std::list<Road> roads; 
 std::list<Road>::iterator road_it;
 std::list<Car> carsNorth;
 std::list<Car> carsWest;
 std::list<Car>::iterator car_it;
-Intersection intersection;
-TrafficLight lightNorth;
-TrafficLight lightWest;
-Road roadNorth;
-Road roadWest;
-
-int pw = 10;                                    // spawn rate probability for west road
-int pn = 10;                                    // spawn rate probability for north road
+Intersection intersection;// = Intersection(roads, state);
+TrafficLight lightNorth;// = TrafficLight(200, 70, states[northState]);
+TrafficLight lightWest;// = TrafficLight(200, 70, states[westState]);
+Road roadNorth;// = Road(carsNorth, lightNorth, pn);
+Road roadWest;// = Road(carsWest, lightWest, pw);
 
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -154,15 +154,15 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    }
 
    GetClientRect(hWnd, &screensize);
-
+   
    states = new bool* [4];
    states[0] = redState;
    states[1] = readyState;
    states[2] = greenState;
    states[3] = stoppingState;
 
-   lightNorth = TrafficLight(250, 90, states[northState]);
-   lightWest = TrafficLight(250, 90, states[westState]);
+   lightNorth = TrafficLight(200, 70, states[northState]);
+   lightWest = TrafficLight(200, 70, states[westState]);
 
    roadNorth = Road(carsNorth, lightNorth, pn);
    roadWest = Road(carsWest, lightWest, pw);
@@ -171,6 +171,9 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    roads.push_front(roadWest);
 
    intersection = Intersection(roads, state);
+
+   roads.push_front(roadNorth);
+   roads.push_front(roadWest);
 
    SetTimer(hWnd, IDT_TRAFFICLIGHTTIMER, 3000, (TIMERPROC)NULL);
    SetTimer(hWnd, IDT_CARSPAWNTIMER, 1000, (TIMERPROC)NULL);
@@ -347,6 +350,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             RECT rc;
             GetClientRect(hWnd, &rc);
             
+            // Create virtual device context for double buffering
             HDC hdc = CreateCompatibleDC(phdc);
             HBITMAP bm = CreateCompatibleBitmap(phdc, rc.right, rc.bottom);
             SelectObject(hdc, bm);
@@ -356,8 +360,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             Rect(&hdc, 0, 0, rc.right, rc.bottom, RGB(255, 255, 255));
             
             intersection.DrawRoads(&hdc, screensize);
-            DrawTrafficLight(&hdc, rc, -60, -60, states[westState]);
-            DrawTrafficLight(&hdc, rc, -60, 310, states[northState]);
+
+            // Draw northern road lights
+            lightNorth.DrawTrafficLight(&hdc, screensize, true, states[northState]);
+            
+            // Draw western road lights
+            lightWest.DrawTrafficLight(&hdc, screensize, false, states[westState]);
+
+            
+            //DrawTrafficLight(&hdc, screensize, true, states[northState]);
+            //DrawTrafficLight(&hdc, screensize, false, states[westState]);
+
             roadNorth.DrawCars(&hdc, screensize);
             roadWest.DrawCars(&hdc, screensize);
 
@@ -424,9 +437,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         InvalidateRect(hWnd, 0, false);
         break;
     case WM_DESTROY:
-        KillTimer(hWnd, 0);
-        KillTimer(hWnd, 1);
-        KillTimer(hWnd, 2);
+        KillTimer(hWnd, IDT_CARSPAWNTIMER);
+        KillTimer(hWnd, IDT_CARUPDATETIMER);
+        KillTimer(hWnd, IDT_TRAFFICLIGHTTIMER);
+        carsNorth.clear();
+        carsWest.clear();
         PostQuitMessage(0);
         break;
     default:
@@ -459,11 +474,13 @@ void UpdateCars(HWND hWnd, std::list<Car> cars, std::list<Car>::iterator it)
 {
     for (it = cars.begin(); it != cars.end(); ++it)
     {
+        /*
         if (it->y > screensize.bottom - 10 || it->x > screensize.right - 10)
         {
             cars.erase(it);
             break;
         }
+        */
         auto it2 = it;
         it2++;
         if (it->direction)

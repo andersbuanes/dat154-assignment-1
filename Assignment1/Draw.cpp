@@ -7,6 +7,10 @@
 #include "Car.h"
 #include "Colors.h"
 #include "Resource.h"
+#include "Constants.h"
+
+const int WIDTH = 70;
+const int HEIGHT = 200;
 
 /*
 	Traffic Light States:
@@ -16,28 +20,83 @@
 	3 - stopping
 */
 using namespace Colors;
-void DrawTrafficLight(HDC* hdc, RECT &rc, int x, int y, bool state[])
-{
-	int width = 90;
-	int height = 250;
+void DrawTrafficLight(HDC* hdc, RECT &rc, bool north, bool state[])
+{	
+	int X = rc.right / 2;
+	int Y = rc.bottom / 2;
+	int left, top, right, bottom, padX, padY;
 
-	int left = (rc.right / 2) - width + x;
-	int top = (rc.bottom / 2) - height + y;
+	if (north)
+	{
+		padX = ROAD_WIDTH + WIDTH / 2;
+		padY = ROAD_WIDTH + WIDTH;
+		left = X - WIDTH - padX;
+		top = Y - HEIGHT - padY;
+		right = X - padX;
+		bottom = Y - padY;
+		Rect(hdc, left, top, right, bottom, BLACK);
 
-	int right = left + 90;
-	int bottom = top + 250;
+		Circle(hdc, left + 10, top + 10, right - 10, top + 60, state[0] ? RED : GREY);
+		Circle(hdc, left + 10, top + 75, right - 10, top + 125, state[1] ? YELLOW : GREY);
+		Circle(hdc, left + 10, top + 140, right - 10, top + 190, state[2] ? GREEN : GREY);
+
+		left = X + padX;
+		top = Y + padY;
+		right = X + WIDTH + padX;
+		bottom = Y + HEIGHT + padY;
+		Rect(hdc, left, top, right, bottom, BLACK);
+
+		Circle(hdc, left + 10, top + 10, right - 10, top + 60, state[0] ? RED : GREY);
+		Circle(hdc, left + 10, top + 75, right - 10, top + 125, state[1] ? YELLOW : GREY);
+		Circle(hdc, left + 10, top + 140, right - 10, top + 190, state[2] ? GREEN : GREY);
+	}
+	else
+	{
+		padX = ROAD_WIDTH + WIDTH * 2;
+		padY = ROAD_WIDTH + WIDTH / 2;
+		left = X + padX;
+		top = Y - HEIGHT - padY;
+		right = X + WIDTH + padX;
+		bottom = Y - padY;
+		Rect(hdc, left, top, right, bottom, BLACK);
+
+		Circle(hdc, left + 10, top + 10, right - 10, top + 60, state[0] ? RED : GREY);
+		Circle(hdc, left + 10, top + 75, right - 10, top + 125, state[1] ? YELLOW : GREY);
+		Circle(hdc, left + 10, top + 140, right - 10, top + 190, state[2] ? GREEN : GREY);
+
+		left = X - WIDTH - padX;
+		top = Y +  padY;
+		right = X - padX;
+		bottom = Y + HEIGHT + padY;
+		Rect(hdc, left, top, right, bottom, BLACK);
+
+		Circle(hdc, left + 10, top + 10, right - 10, top + 60, state[0] ? RED : GREY);
+		Circle(hdc, left + 10, top + 75, right - 10, top + 125, state[1] ? YELLOW : GREY);
+		Circle(hdc, left + 10, top + 140, right - 10, top + 190, state[2] ? GREEN : GREY);
+	}
+
+
+	/*
+	int width = WIDTH;
+	int height = HEIGHT;
+
+	int left = (rc.right / 2) - WIDTH + x;
+	int top = (rc.bottom / 2) - HEIGHT + y;
+
+	int right = left + WIDTH;
+	int bottom = top + HEIGHT;
 
 	int fTop = top + 10;
-	int sTop = top + 90;
-	int tTop = top + 170;
+	int sTop = top + 75;
+	int tTop = top + 140;
 
 	// Draw background
 	Rect(hdc, left, top, right, bottom, BLACK);
 
-	Circle(hdc, left + 10, fTop, right - 10, top + 80, state[0] ? RED : GREY);
-	Circle(hdc, left + 10, sTop, right - 10, top + 160, state[1] ? YELLOW : GREY);
-	Circle(hdc, left + 10, tTop, right - 10, top + 240, state[2] ? GREEN : GREY);
-
+	Circle(hdc, left + 10, fTop, right - 10, top + 60, state[0] ? RED : GREY);
+	Circle(hdc, left + 10, sTop, right - 10, top + 125, state[1] ? YELLOW : GREY);
+	Circle(hdc, left + 10, tTop, right - 10, top + 190, state[2] ? GREEN : GREY);
+	*/
 }
 
 void DrawRoads(HDC* hdc, RECT &rc)
