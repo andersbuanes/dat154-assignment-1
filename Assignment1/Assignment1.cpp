@@ -21,7 +21,7 @@
 
 #define IDM_ABOUT 104
 #define IDM_EXIT 105
-#define IDD_DIALOG1 129
+#define IDD_DIALOG1 1000
 
 // Global Variables:
 HINSTANCE hInst;                                // current instance
@@ -240,8 +240,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 std::random_device rd;                          // initialise seed
                 std::mt19937 rng(rd());                         // Mersenne-Twister random-number engine
                 std::uniform_int_distribution<int> p(0, 100);   // probability of spawn
-                std::uniform_int_distribution<int> speed(3, 7); // car speed interval
-                std::uniform_int_distribution<int> lane(0, 1);  // car lane spawn
+                //std::uniform_int_distribution<int> speed(3, 7); // car speed interval
+                //std::uniform_int_distribution<int> lane(0, 1);  // car lane spawn
                 auto randNorth = p(rng);
                 auto randEast = p(rng);
                 auto randSouth = p(rng);
@@ -283,9 +283,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             HBITMAP bm = CreateCompatibleBitmap(phdc, rc.right, rc.bottom);
             SelectObject(hdc, bm);
 
-            HBRUSH bg = CreateSolidBrush(RGB(255, 255, 255));
+            HBRUSH bg = CreateSolidBrush(RGB(132, 192, 17));
             HGDIOBJ hOrg = SelectObject(hdc, bg);
-            Rect(&hdc, 0, 0, rc.right, rc.bottom, RGB(255, 255, 255));
+            Rect(&hdc, 0, 0, rc.right, rc.bottom, RGB(132, 192, 17));
             
             intersection.DrawRoads(&hdc, screensize);
 
@@ -300,9 +300,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             roadSouth.DrawCars(&hdc, screensize);
             roadWest.DrawCars(&hdc, screensize);
 
-            WCHAR txt[100];
-            wsprintf(txt, L"pw: %d%%\r\npn: %d%%\r\npe: %d%%\r\nps: %d%%\r\n", pw, pn, pe, pso);
-            DrawText(hdc, txt, lstrlen(txt), &rc, DT_LEFT);
+            WCHAR text[100];
+            wsprintf(text, L"Probability north: %d%%\r\nProbability east: %d%%\r\nProbability south: %d%%\r\nProbability west: %d%%\r\n", pn, pe, pso, pw);
+            DrawText(hdc, text, lstrlen(text), &rc, DT_LEFT);
 
             BitBlt(phdc, 0, 0, rc.right, rc.bottom, hdc, 0, 0, SRCCOPY);
 
@@ -343,6 +343,34 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             if (pn - 10 >= 0)
             {
                 pn -= 10;
+                InvalidateRect(hWnd, 0, false);
+            }
+            break;
+        case 0x41: // A
+            if (pe - 10 >= 0)
+            {
+                pe -= 10;
+                InvalidateRect(hWnd, 0, false);
+            }
+            break;
+        case 0x44: // D
+            if (pe + 10 < 100)
+            {
+                pe += 10;
+                InvalidateRect(hWnd, 0, false);
+            }
+            break;
+        case 0x53: // S
+            if (pso - 10 >= 0)
+            {
+                pso -= 10;
+                InvalidateRect(hWnd, 0, false);
+            }
+            break;
+        case 0x57: // W
+            if (pso + 10 < 100)
+            {
+                pso += 10;
                 InvalidateRect(hWnd, 0, false);
             }
             break;
@@ -405,11 +433,11 @@ INT_PTR CALLBACK ProbabilityDialog(HWND hDlg, UINT message, WPARAM wParam, LPARA
         HWND hStaticText3 = GetDlgItem(hDlg, IDC_STATICTEXT3);
         HWND hStaticText4 = GetDlgItem(hDlg, IDC_STATICTEXT4);
         HWND hStaticText5 = GetDlgItem(hDlg, IDC_STATICTEXT5);
-        SetWindowText(hStaticText1, L"Probability of car spawning west->east: (0-110)");
-        SetWindowText(hStaticText1, L"Probability of car spawning north->south: (0-110)");
-        SetWindowText(hStaticText1, L"");
-        SetWindowText(hStaticText1, L"Probability of car spawning east->west: (0-110)");
-        SetWindowText(hStaticText1, L"Probability of car spawning south->north: (0-110)");
+        SetWindowText(hStaticText1, L"North (pn): (0-100)");
+        SetWindowText(hStaticText2, L"East (pe): (0-100)");
+        SetWindowText(hStaticText3, L"");
+        SetWindowText(hStaticText4, L"South (pso): (0-100)");
+        SetWindowText(hStaticText5, L"West (pw): (0-100)");
         return (INT_PTR)TRUE;
     }
     case WM_COMMAND:
@@ -418,11 +446,11 @@ INT_PTR CALLBACK ProbabilityDialog(HWND hDlg, UINT message, WPARAM wParam, LPARA
             BOOL var1 = true;
             int val1 = GetDlgItemInt(hDlg, IDC_EDIT1, &var1, false);
             BOOL var2 = true;
-            int val2 = GetDlgItemInt(hDlg, IDC_EDIT1, &var2, false);
+            int val2 = GetDlgItemInt(hDlg, IDC_EDIT2, &var2, false);
             BOOL var3 = true;
-            int val3 = GetDlgItemInt(hDlg, IDC_EDIT1, &var3, false);
+            int val3 = GetDlgItemInt(hDlg, IDC_EDIT3, &var3, false);
             BOOL var4 = true;
-            int val4 = GetDlgItemInt(hDlg, IDC_EDIT1, &var4, false);
+            int val4 = GetDlgItemInt(hDlg, IDC_EDIT4, &var4, false);
             HWND hStaticText3 = GetDlgItem(hDlg, IDC_STATICTEXT3);
             if (var1 == FALSE || var2 == FALSE || var3 == FALSE || var4 == FALSE)
             {
@@ -434,10 +462,10 @@ INT_PTR CALLBACK ProbabilityDialog(HWND hDlg, UINT message, WPARAM wParam, LPARA
             }
             else
             {
-                pw = val1;
-                pn = val2;
-                pe = val3;
-                pso = val4;
+                pn = val1;
+                pe = val2;
+                pso = val3;
+                pw = val4;
                 EndDialog(hDlg, LOWORD(wParam));
                 return (INT_PTR)TRUE;
             }

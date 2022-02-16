@@ -21,6 +21,11 @@ void Intersection::DrawRoads(HDC* hdc, RECT &rc)
 	Line(hdc, 10, Y, rc.right - 10, Y, Colors::DIVIDERYELLOW);
 	Line(hdc, X, 10, X, rc.bottom - 10, Colors::DIVIDERYELLOW);
 
+	DashedLine(hdc, 10, Y - (ROAD_WIDTH / 2), rc.right - 10, Y - (ROAD_WIDTH / 2), Colors::WHITE);
+	DashedLine(hdc, 10, Y + (ROAD_WIDTH / 2), rc.right - 10, Y + (ROAD_WIDTH / 2), Colors::WHITE);
+	DashedLine(hdc, X - (ROAD_WIDTH / 2), 10, X - (ROAD_WIDTH / 2), rc.bottom - 10, Colors::WHITE);
+	DashedLine(hdc, X + (ROAD_WIDTH / 2), 10, X + (ROAD_WIDTH / 2), rc.bottom - 10, Colors::WHITE);
+
 	// Draw intersection
 	Rect(hdc, X - ROAD_WIDTH, Y - ROAD_WIDTH, X + ROAD_WIDTH, Y + ROAD_WIDTH, Colors::INTERSECTIONGREY);
 }

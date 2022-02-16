@@ -20,6 +20,5 @@ public:
 
 	void Move();
 	void DrawCar(HDC hdc, RECT &rc);
-
 };
 

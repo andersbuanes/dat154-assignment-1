@@ -50,6 +50,24 @@ void Line(HDC* hdc, int left, int top, int right, int bottom, COLORREF color)
 	lb.lbColor = color;
 	lb.lbStyle = BS_SOLID;
 
+	HGDIOBJ hPen = ExtCreatePen(PS_GEOMETRIC | PS_SOLID, 1.5, &lb, 0, NULL);
+	HGDIOBJ hPenOld = SelectObject(*hdc, hPen);
+
+	MoveToEx(*hdc, left, top, 0);
+	LineTo(*hdc, right, bottom);
+
+	SelectObject(*hdc, hPenOld);
+	DeleteObject(hPen);
+	DeleteObject(hPenOld);
+}
+
+void DashedLine(HDC* hdc, int left, int top, int right, int bottom, COLORREF color)
+{
+	DWORD style[] = { 20, 8 };
+	LOGBRUSH lb;
+	lb.lbColor = color;
+	lb.lbStyle = BS_SOLID;
+
 	HGDIOBJ hPen = ExtCreatePen(PS_GEOMETRIC | PS_USERSTYLE, 1.5, &lb, 2, style);
 	HGDIOBJ hPenOld = SelectObject(*hdc, hPen);
 
