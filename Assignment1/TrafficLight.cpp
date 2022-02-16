@@ -34,11 +34,6 @@ void TrafficLight::DrawTrafficLight(HDC* hdc, RECT& rc, bool north, int state)
 		Circle(hdc, left + 10, top + 75, right - 10, top + 125, LIGHTS[state][1] ? Colors::YELLOW : Colors::GREY);
 		Circle(hdc, left + 10, top + 140, right - 10, top + 190, LIGHTS[state][2] ? Colors::GREEN : Colors::GREY);
 
-		// TODO remove state debug
-		WCHAR text[15];
-		wsprintf(text, _T("%d"), state);
-		TextOut(*hdc, right, bottom, text, wcslen(text));
-
 		left = X + padX;
 		top = Y + padY;
 		right = X + width + padX;
@@ -48,10 +43,6 @@ void TrafficLight::DrawTrafficLight(HDC* hdc, RECT& rc, bool north, int state)
 		Circle(hdc, left + 10, top + 10, right - 10, top + 60, LIGHTS[state][0] ? Colors::RED : Colors::GREY);
 		Circle(hdc, left + 10, top + 75, right - 10, top + 125, LIGHTS[state][1] ? Colors::YELLOW : Colors::GREY);
 		Circle(hdc, left + 10, top + 140, right - 10, top + 190, LIGHTS[state][2] ? Colors::GREEN : Colors::GREY);
-	
-		// TODO remove state debug
-		wsprintf(text, _T("%d"), state);
-		TextOut(*hdc, right, bottom, text, wcslen(text));
 	}
 	else
 	{
@@ -67,11 +58,6 @@ void TrafficLight::DrawTrafficLight(HDC* hdc, RECT& rc, bool north, int state)
 		Circle(hdc, left + 10, top + 75, right - 10, top + 125, LIGHTS[state][1] ? Colors::YELLOW : Colors::GREY);
 		Circle(hdc, left + 10, top + 140, right - 10, top + 190, LIGHTS[state][2] ? Colors::GREEN : Colors::GREY);
 
-		// TODO remove state debug
-		WCHAR text[15];
-		wsprintf(text, _T("%d"), state);
-		TextOut(*hdc, right, bottom, text, wcslen(text));
-
 		left = X - width - padX;
 		top = Y + padY;
 		right = X - padX;
@@ -81,9 +67,5 @@ void TrafficLight::DrawTrafficLight(HDC* hdc, RECT& rc, bool north, int state)
 		Circle(hdc, left + 10, top + 10, right - 10, top + 60, LIGHTS[state][0] ? Colors::RED : Colors::GREY);
 		Circle(hdc, left + 10, top + 75, right - 10, top + 125, LIGHTS[state][1] ? Colors::YELLOW : Colors::GREY);
 		Circle(hdc, left + 10, top + 140, right - 10, top + 190, LIGHTS[state][2] ? Colors::GREEN : Colors::GREY);
-		
-		// TODO remove state debug
-		wsprintf(text, _T("%d"), state);
-		TextOut(*hdc, right, bottom, text, wcslen(text));
 	}
 }

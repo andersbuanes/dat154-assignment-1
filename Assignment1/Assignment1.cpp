@@ -255,12 +255,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 if (randEast <= pe)
                 {
                     int y = (screensize.bottom / 2) - CAR_HEIGHT;
-                    roadNorth.cars.push_front(Car(screensize.right - 10, y, WEST, RGB(rand() % 255, rand() % 255, rand() % 255)));
+                    roadEast.cars.push_front(Car(screensize.right - 10, y, WEST, RGB(rand() % 255, rand() % 255, rand() % 255)));
                 }
                 if (randSouth <= pso)
                 {
                     int x = (screensize.right / 2) + CAR_WIDTH;
-                    roadNorth.cars.push_front(Car(x, screensize.bottom - 10, NORTH, RGB(rand() % 255, rand() % 255, rand() % 255)));
+                    roadSouth.cars.push_front(Car(x, screensize.bottom - 10, NORTH, RGB(rand() % 255, rand() % 255, rand() % 255)));
                 }
                 if (randWest <= pw)
                 {
@@ -296,6 +296,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             lightWest.DrawTrafficLight(&hdc, screensize, false, westState);
 
             roadNorth.DrawCars(&hdc, screensize);
+            roadEast.DrawCars(&hdc, screensize);
+            roadSouth.DrawCars(&hdc, screensize);
             roadWest.DrawCars(&hdc, screensize);
 
             WCHAR txt[100];

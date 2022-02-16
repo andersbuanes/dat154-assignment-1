@@ -22,7 +22,6 @@ void Road::DrawCars(HDC* hdc, RECT &rc)
 
 void Road::MoveCars(HWND hWnd, RECT &rc)
 {
-	// TODO fix trafficlight state management
 	std::list<Car>::iterator it;
 	const auto end = cars.end();
 
@@ -53,7 +52,6 @@ void Road::MoveCars(HWND hWnd, RECT &rc)
 		next++;
 		if (next != end)
 		{
-			// TODO fix collision detection
 			switch (it->direction)
 			{
 			case NORTH:
