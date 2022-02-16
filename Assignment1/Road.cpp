@@ -22,14 +22,29 @@ void Road::DrawCars(HDC* hdc, RECT &rc)
 
 void Road::MoveCars(HWND hWnd, RECT &rc)
 {
-	// TODO implement direction based movement
 	// TODO fix light stop position/condition
 	std::list<Car>::iterator it;
 	const auto end = cars.end();
 
 	for (it = cars.begin(); it != end; ++it)
 	{
-		if (it->y > rc.bottom - 10 || it->x > rc.right - 10)
+		bool isFinished = false, wouldCollide = true, canMove = false;
+		switch (it->direction) 
+		{
+		case NORTH:
+			isFinished = it->y < 10;
+			break;
+		case EAST:
+			isFinished = it->x > rc.right - 10;
+			break;
+		case SOUTH:
+			isFinished = it->y > rc.bottom - 10;
+			break;
+		case WEST:
+			isFinished = it->x < 10;
+			break;
+		}
+		if (isFinished)
 		{
 			cars.erase(it);
 			break;
@@ -39,10 +54,23 @@ void Road::MoveCars(HWND hWnd, RECT &rc)
 		if (next != end)
 		{
 			// TODO fix collision detection
-			bool wouldCollideX = it->x + CAR_WIDTH + 10 >= next->x && it->y == next->y;
-			bool wouldCollideY = it->y + CAR_HEIGHT + 10 >= next->y && it->x == next->x;
-			
-			if (wouldCollideX || wouldCollideY)
+			switch (it->direction)
+			{
+			case NORTH:
+				wouldCollide = it->y - CAR_HEIGHT - 10 <= next->y && it->x == next->x;
+				break;
+			case EAST:
+				wouldCollide = it->x + CAR_WIDTH + 10 >= next->x && it->y == next->y;
+				break;
+			case SOUTH:
+				wouldCollide = it->y + CAR_HEIGHT + 10 >= next->y && it->x == next->x;
+				break;
+			case WEST:
+				wouldCollide = it->x - CAR_WIDTH - 10 <= next->x && it->y == next->y;
+				break;
+			}
+
+			if (wouldCollide)
 				continue;
 		}
 		if (trafficLight.state == green || trafficLight.state == stopping)
@@ -52,7 +80,24 @@ void Road::MoveCars(HWND hWnd, RECT &rc)
 		}
 		else
 		{
-			if (it->y < (rc.bottom / 2) - ROAD_WIDTH - 20 || it->y >(rc.bottom / 2) + ROAD_WIDTH)
+			int X = rc.right / 2;
+			int Y = rc.bottom / 2;
+			switch (it->direction)
+			{
+			case NORTH:
+				canMove = it->y > Y + ROAD_WIDTH || it->y < Y - ROAD_WIDTH;
+				break;
+			case EAST:
+				canMove = it->x < X - ROAD_WIDTH - CAR_WIDTH || it->x > X + ROAD_WIDTH;
+				break;
+			case SOUTH:
+				canMove = it->y < Y - ROAD_WIDTH - CAR_HEIGHT || it->y > Y + ROAD_WIDTH;
+				break;
+			case WEST: 
+				canMove = it->x > X - ROAD_WIDTH || it->x < X - ROAD_WIDTH;
+				break;
+			}
+			if (canMove)
 			{
 				it->Move();
 				InvalidateRect(hWnd, 0, false);
