@@ -29,16 +29,10 @@ WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 
 RECT screensize;                                // screen size
-bool** states;                                  // array storing traffic light states
 int westState = 0;                              // tracking of west road light state
 int northState = 2;                             // tracking of north road light state
 int state = 0;                                  // overall state tracker
 int change = 0;
-
-bool redState[] = { TRUE, FALSE, FALSE };
-bool readyState[] = { TRUE, TRUE, FALSE };
-bool greenState[] = { FALSE, FALSE, TRUE };
-bool stoppingState[] = { FALSE, TRUE, FALSE };
 
 int pn = 10;                                    // spawn rate probability for north road
 int pe = 10;                                    // spawn rate probability for east road
@@ -111,8 +105,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     return (int) msg.wParam;
 }
 
-
-
 //
 //  FUNCTION: MyRegisterClass()
 //
@@ -163,14 +155,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
    GetClientRect(hWnd, &screensize);
    
-   states = new bool* [4];
-   states[0] = redState;
-   states[1] = readyState;
-   states[2] = greenState;
-   states[3] = stoppingState;
-
-   lightNorth = TrafficLight(200, 70, states[northState]);
-   lightWest = TrafficLight(200, 70, states[westState]);
+   lightNorth = TrafficLight(200, 70, northState);
+   lightWest = TrafficLight(200, 70, westState);
 
    roadNorth = Road(carsNorth, lightNorth, pn);
    roadEast = Road(carsEast, lightWest, pe);
@@ -178,13 +164,15 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    roadWest = Road(carsWest, lightWest, pw);
 
    roads.push_front(roadNorth);
+   roads.push_front(roadEast);
+   roads.push_front(roadSouth);
    roads.push_front(roadWest);
 
    intersection = Intersection(roads, state);
 
    SetTimer(hWnd, IDT_TRAFFICLIGHTTIMER, 3000, (TIMERPROC)NULL);
    SetTimer(hWnd, IDT_CARSPAWNTIMER, 1000, (TIMERPROC)NULL);
-   SetTimer(hWnd, IDT_CARUPDATETIMER, 30, (TIMERPROC)NULL);
+   SetTimer(hWnd, IDT_CARUPDATETIMER, 10, (TIMERPROC)NULL);
 
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);
@@ -243,64 +231,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 roadEast.MoveCars(hWnd, screensize);
                 roadSouth.MoveCars(hWnd, screensize);
                 roadWest.MoveCars(hWnd, screensize);
-                /*
-                for (car_it = cars.begin(); car_it != cars.end(); ++it)
-                {
-                    if (it-> y > rc.bottom - 10 || it->x > rc.right - 10)
-                    {
-                        cars.erase(it);
-                        break;
-                    }
-                    auto it2 = it;
-                    it2++;
-                    if (it->direction)
-                    {
-                        auto next = std::find_if(it2, cars.end(), [](auto& c) {return c.direction; });
-                        if (next != end(cars) && it->direction)
-                        {
-                            if (it->y + 40 >= next->y && it->x == next->x)
-                            {
-                                continue;
-                            }
-                        }
-                        if (state == 2 || state == 3)
-                        {
-                            it->Move();
-                            InvalidateRect(hWnd, 0, false);
-                        }
-                        else
-                        {
-                            if (it->y < (rc.bottom/2) - ROAD_WIDTH - 20 || it->y > (rc.bottom/2)+ ROAD_WIDTH)
-                            {
-                                it->Move();
-                                InvalidateRect(hWnd, 0, false);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        auto next = std::find_if(it2, cars.end(), [](auto& c) { return !c.direction; });
-                        if (next != end(cars) && !it->direction)
-                        {
-                            if (it->x + 40 >= next->x && it->y == next->y)
-                                continue;
-                        }
-                        if (intersection.state == 0 || state == 1)
-                        {
-                            it->Move();
-                            InvalidateRect(hWnd, 0, false);
-                        }
-                        else
-                        {
-                            if (it->x < (rc.right/2) - ROAD_WIDTH - 20 || it->x > (rc.right/2) + ROAD_WIDTH)
-                            {
-                                it->Move();
-                                InvalidateRect(hWnd, 0, false);
-                            }
-                        }
-                    }
-                }
-                */
                 InvalidateRect(hWnd, NULL, false);
                 break;
             case IDT_CARSPAWNTIMER:
@@ -319,23 +249,22 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 
                 if (randNorth <= pn)
                 {
-                    int x = (screensize.right / 2) - 25;
+                    int x = (screensize.right / 2) - CAR_WIDTH;
                     roadNorth.cars.push_front(Car(x, 10, SOUTH, RGB(rand() % 255, rand() % 255, rand() % 255)));
                 }
                 if (randEast <= pe)
                 {
-                    int y = (screensize.bottom / 2) - 25;
+                    int y = (screensize.bottom / 2) - CAR_HEIGHT;
                     roadNorth.cars.push_front(Car(screensize.right - 10, y, WEST, RGB(rand() % 255, rand() % 255, rand() % 255)));
                 }
                 if (randSouth <= pso)
                 {
-                    int x = (screensize.right / 2) + 25;
+                    int x = (screensize.right / 2) + CAR_WIDTH;
                     roadNorth.cars.push_front(Car(x, screensize.bottom - 10, NORTH, RGB(rand() % 255, rand() % 255, rand() % 255)));
                 }
                 if (randWest <= pw)
                 {
-                    int spawn = lane(rng);
-                    int y = (screensize.bottom / 2) + 25;
+                    int y = (screensize.bottom / 2) + CAR_HEIGHT;
                     roadWest.cars.push_front(Car(10, y, EAST, RGB(rand() % 255, rand() % 255, rand() % 255)));
                 }
                 break;
@@ -361,24 +290,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             intersection.DrawRoads(&hdc, screensize);
 
             // Draw northern road lights
-            lightNorth.DrawTrafficLight(&hdc, screensize, true, states[northState]);
+            lightNorth.DrawTrafficLight(&hdc, screensize, true, northState);
             
             // Draw western road lights
-            lightWest.DrawTrafficLight(&hdc, screensize, false, states[westState]);
-
-            
-            //DrawTrafficLight(&hdc, screensize, true, states[northState]);
-            //DrawTrafficLight(&hdc, screensize, false, states[westState]);
+            lightWest.DrawTrafficLight(&hdc, screensize, false, westState);
 
             roadNorth.DrawCars(&hdc, screensize);
             roadWest.DrawCars(&hdc, screensize);
-
-            /* old drawing logic
-            DrawRoads(&hdc, rc);
-            DrawTrafficLight(&hdc, rc, -60, -60, states[westState]);
-            DrawTrafficLight(&hdc, rc, -60, 310, states[northState]);
-            DrawCars(&hdc, rc, cars, it);
-            */
 
             WCHAR txt[100];
             wsprintf(txt, L"pw: %d%%\r\npn: %d%%\r\npe: %d%%\r\nps: %d%%\r\n", pw, pn, pe, pso);
@@ -532,68 +450,6 @@ INT_PTR CALLBACK ProbabilityDialog(HWND hDlg, UINT message, WPARAM wParam, LPARA
     return (INT_PTR)FALSE;
 }
 
-void UpdateCars(HWND hWnd, std::list<Car> cars, std::list<Car>::iterator it)
-{
-    for (it = cars.begin(); it != cars.end(); ++it)
-    {
-        /*
-        if (it->y > screensize.bottom - 10 || it->x > screensize.right - 10)
-        {
-            cars.erase(it);
-            break;
-        }
-        */
-        auto it2 = it;
-        it2++;
-        if (it->direction)
-        {
-            auto next = std::find_if(it2, cars.end(), [](auto& c) {return c.direction; });
-            if (next != end(cars) && it->direction)
-            {
-                if (it->y + 40 >= next->y && it->x == next->x)
-                {
-                    continue;
-                }
-            }
-            if (state == 2 || state == 3)
-            {
-                it->Move();
-                InvalidateRect(hWnd, 0, false);
-            }
-            else
-            {
-                if (it->y < (screensize.bottom / 2) - ROAD_WIDTH - 20 || it->y >(screensize.bottom / 2) + ROAD_WIDTH)
-                {
-                    it->Move();
-                    InvalidateRect(hWnd, 0, false);
-                }
-            }
-        }
-        else
-        {
-            auto next = std::find_if(it2, cars.end(), [](auto& c) { return !c.direction; });
-            if (next != end(cars) && !it->direction)
-            {
-                if (it->x + 40 >= next->x && it->y == next->y)
-                    continue;
-            }
-            if (intersection.state == 0 || state == 1)
-            {
-                it->Move();
-                InvalidateRect(hWnd, 0, false);
-            }
-            else
-            {
-                if (it->x < (screensize.right / 2) - ROAD_WIDTH - 20 || it->x >(screensize.right / 2) + ROAD_WIDTH)
-                {
-                    it->Move();
-                    InvalidateRect(hWnd, 0, false);
-                }
-            }
-        }
-    }
-}
-
 void DrawCars(HDC* hdc, RECT &rc, std::list<Car> cars, std::list<Car>::iterator it)
 {   
     const auto end = cars.end();
@@ -606,18 +462,14 @@ void DrawCars(HDC* hdc, RECT &rc, std::list<Car> cars, std::list<Car>::iterator 
 
 void ChangeLightStates()
 {
-    westState++;
-    northState++;
-    state++;
+    westState = (westState + 1) % 4;
+    northState = (northState + 1) % 4;
+    state = (state + 1) % 4;
 
-    if (state == 4)
-        state = 0;
-
-    if (westState == 4)
-        westState = 0;
-
-    if (northState == 4)
-        northState = 0;
+    roadNorth.trafficLight.state = northState;
+    roadEast.trafficLight.state = westState;
+    roadSouth.trafficLight.state = northState;
+    roadWest.trafficLight.state = westState;
 }
 
 

@@ -157,6 +157,7 @@
   <ItemGroup>
     <ClCompile Include="Assignment1.cpp" />
     <ClCompile Include="Car.cpp" />
+    <ClCompile Include="Constants.cpp" />
     <ClCompile Include="Draw.cpp" />
     <ClCompile Include="Intersection.cpp" />
     <ClCompile Include="Road.cpp" />

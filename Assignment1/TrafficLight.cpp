@@ -4,28 +4,17 @@ TrafficLight::TrafficLight()
 {
 	this->height = 0;
 	this->width = 0;
-	this->state[0] = FALSE;
-	this->state[1] = FALSE;
-	this->state[2] = FALSE;
+	this->state = 0;
 }
 
-TrafficLight::TrafficLight(int height, int width, bool state[])
+TrafficLight::TrafficLight(int height, int width, int state)
 {
 	this->height = height;
 	this->width = width;
-	this->state[0] = state[0];
-	this->state[1] = state[1];
-	this->state[2] = state[2];
+	this->state = state;
 }
 
-void TrafficLight::ChangeState(bool state[])
-{
-	this->state[0] = state[0];
-	this->state[1] = state[1];
-	this->state[2] = state[2];
-}
-
-void TrafficLight::DrawTrafficLight(HDC* hdc, RECT& rc, bool north, bool state[])
+void TrafficLight::DrawTrafficLight(HDC* hdc, RECT& rc, bool north, int state)
 {
 	int X = rc.right / 2;
 	int Y = rc.bottom / 2;
@@ -41,9 +30,14 @@ void TrafficLight::DrawTrafficLight(HDC* hdc, RECT& rc, bool north, bool state[]
 		bottom = Y - padY;
 		RoundedRect(hdc, left, top, right, bottom, Colors::BLACK);
 
-		Circle(hdc, left + 10, top + 10, right - 10, top + 60, state[0] ? Colors::RED : Colors::GREY);
-		Circle(hdc, left + 10, top + 75, right - 10, top + 125, state[1] ? Colors::YELLOW : Colors::GREY);
-		Circle(hdc, left + 10, top + 140, right - 10, top + 190, state[2] ? Colors::GREEN : Colors::GREY);
+		Circle(hdc, left + 10, top + 10, right - 10, top + 60, LIGHTS[state][0] ? Colors::RED : Colors::GREY);
+		Circle(hdc, left + 10, top + 75, right - 10, top + 125, LIGHTS[state][1] ? Colors::YELLOW : Colors::GREY);
+		Circle(hdc, left + 10, top + 140, right - 10, top + 190, LIGHTS[state][2] ? Colors::GREEN : Colors::GREY);
+
+		// TODO remove state debug
+		WCHAR text[15];
+		wsprintf(text, _T("%d"), state);
+		TextOut(*hdc, right, bottom, text, wcslen(text));
 
 		left = X + padX;
 		top = Y + padY;
@@ -51,9 +45,13 @@ void TrafficLight::DrawTrafficLight(HDC* hdc, RECT& rc, bool north, bool state[]
 		bottom = Y + height + padY;
 		RoundedRect(hdc, left, top, right, bottom, Colors::BLACK);
 
-		Circle(hdc, left + 10, top + 10, right - 10, top + 60, state[0] ? Colors::RED : Colors::GREY);
-		Circle(hdc, left + 10, top + 75, right - 10, top + 125, state[1] ? Colors::YELLOW : Colors::GREY);
-		Circle(hdc, left + 10, top + 140, right - 10, top + 190, state[2] ? Colors::GREEN : Colors::GREY);
+		Circle(hdc, left + 10, top + 10, right - 10, top + 60, LIGHTS[state][0] ? Colors::RED : Colors::GREY);
+		Circle(hdc, left + 10, top + 75, right - 10, top + 125, LIGHTS[state][1] ? Colors::YELLOW : Colors::GREY);
+		Circle(hdc, left + 10, top + 140, right - 10, top + 190, LIGHTS[state][2] ? Colors::GREEN : Colors::GREY);
+	
+		// TODO remove state debug
+		wsprintf(text, _T("%d"), state);
+		TextOut(*hdc, right, bottom, text, wcslen(text));
 	}
 	else
 	{
@@ -65,9 +63,14 @@ void TrafficLight::DrawTrafficLight(HDC* hdc, RECT& rc, bool north, bool state[]
 		bottom = Y - padY;
 		RoundedRect(hdc, left, top, right, bottom, Colors::BLACK);
 
-		Circle(hdc, left + 10, top + 10, right - 10, top + 60, state[0] ? Colors::RED : Colors::GREY);
-		Circle(hdc, left + 10, top + 75, right - 10, top + 125, state[1] ? Colors::YELLOW : Colors::GREY);
-		Circle(hdc, left + 10, top + 140, right - 10, top + 190, state[2] ? Colors::GREEN : Colors::GREY);
+		Circle(hdc, left + 10, top + 10, right - 10, top + 60, LIGHTS[state][0] ? Colors::RED : Colors::GREY);
+		Circle(hdc, left + 10, top + 75, right - 10, top + 125, LIGHTS[state][1] ? Colors::YELLOW : Colors::GREY);
+		Circle(hdc, left + 10, top + 140, right - 10, top + 190, LIGHTS[state][2] ? Colors::GREEN : Colors::GREY);
+
+		// TODO remove state debug
+		WCHAR text[15];
+		wsprintf(text, _T("%d"), state);
+		TextOut(*hdc, right, bottom, text, wcslen(text));
 
 		left = X - width - padX;
 		top = Y + padY;
@@ -75,8 +78,12 @@ void TrafficLight::DrawTrafficLight(HDC* hdc, RECT& rc, bool north, bool state[]
 		bottom = Y + height + padY;
 		RoundedRect(hdc, left, top, right, bottom, Colors::BLACK);
 
-		Circle(hdc, left + 10, top + 10, right - 10, top + 60, state[0] ? Colors::RED : Colors::GREY);
-		Circle(hdc, left + 10, top + 75, right - 10, top + 125, state[1] ? Colors::YELLOW : Colors::GREY);
-		Circle(hdc, left + 10, top + 140, right - 10, top + 190, state[2] ? Colors::GREEN : Colors::GREY);
+		Circle(hdc, left + 10, top + 10, right - 10, top + 60, LIGHTS[state][0] ? Colors::RED : Colors::GREY);
+		Circle(hdc, left + 10, top + 75, right - 10, top + 125, LIGHTS[state][1] ? Colors::YELLOW : Colors::GREY);
+		Circle(hdc, left + 10, top + 140, right - 10, top + 190, LIGHTS[state][2] ? Colors::GREEN : Colors::GREY);
+		
+		// TODO remove state debug
+		wsprintf(text, _T("%d"), state);
+		TextOut(*hdc, right, bottom, text, wcslen(text));
 	}
 }

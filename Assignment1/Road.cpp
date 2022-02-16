@@ -16,19 +16,19 @@ Road::Road(std::list<Car> cars, TrafficLight trafficLight, int p) : trafficLight
 
 void Road::DrawCars(HDC* hdc, RECT &rc)
 {
-	for (Car car : cars)
+	for (auto car : cars)
 		car.DrawCar(*hdc, rc);
 }
 
 void Road::MoveCars(HWND hWnd, RECT &rc)
 {
-	// TODO fix light stop position/condition
+	// TODO fix trafficlight state management
 	std::list<Car>::iterator it;
 	const auto end = cars.end();
 
 	for (it = cars.begin(); it != end; ++it)
 	{
-		bool isFinished = false, wouldCollide = true, canMove = false;
+		bool isFinished, wouldCollide, canMove;
 		switch (it->direction) 
 		{
 		case NORTH:
@@ -73,28 +73,31 @@ void Road::MoveCars(HWND hWnd, RECT &rc)
 			if (wouldCollide)
 				continue;
 		}
-		if (trafficLight.state == green || trafficLight.state == stopping)
+		if (trafficLight.state == 2 || trafficLight.state == 3)
 		{
 			it->Move();
 			InvalidateRect(hWnd, 0, false);
 		}
 		else
 		{
-			int X = rc.right / 2;
-			int Y = rc.bottom / 2;
+			// Intersection bounds
+			int left = (rc.right / 2) - ROAD_WIDTH;
+			int top = (rc.bottom / 2) - ROAD_WIDTH;
+			int right = (rc.right / 2) + ROAD_WIDTH;
+			int bottom = (rc.bottom / 2) + ROAD_WIDTH;
 			switch (it->direction)
 			{
 			case NORTH:
-				canMove = it->y > Y + ROAD_WIDTH || it->y < Y - ROAD_WIDTH;
+				canMove = it->y > bottom			|| it->y < bottom - (CAR_HEIGHT / 2);
 				break;
 			case EAST:
-				canMove = it->x < X - ROAD_WIDTH - CAR_WIDTH || it->x > X + ROAD_WIDTH;
+				canMove = it->x + CAR_WIDTH < left	|| it->x + CAR_WIDTH > left + (CAR_WIDTH / 2);
 				break;
 			case SOUTH:
-				canMove = it->y < Y - ROAD_WIDTH - CAR_HEIGHT || it->y > Y + ROAD_WIDTH;
+				canMove = it->y + CAR_HEIGHT < top	|| it->y + CAR_HEIGHT > top + (CAR_HEIGHT / 2);
 				break;
 			case WEST: 
-				canMove = it->x > X - ROAD_WIDTH || it->x < X - ROAD_WIDTH;
+				canMove = it->x > right				|| it->x < right - (CAR_WIDTH / 2);
 				break;
 			}
 			if (canMove)

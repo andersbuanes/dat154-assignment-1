@@ -9,12 +9,10 @@
 class TrafficLight
 {
 public:
-	int height, width;
-	bool state[3];
+	int height, width, state;
 	
 	TrafficLight();
-	TrafficLight(int height, int width, bool state[]);
+	TrafficLight(int height, int width, int state);
 
-	void ChangeState(bool state[]);
-	void DrawTrafficLight(HDC* hdc, RECT& rc, bool north, bool state[]);
+	void DrawTrafficLight(HDC* hdc, RECT& rc, bool north, int state);
 };

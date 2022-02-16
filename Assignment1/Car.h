@@ -5,14 +5,14 @@
 #include "Shapes.h"
 #include "Direction.h"
 
-#define MOVESPEED 3;
+#define MOVESPEED 2;
 
 class Car
 {
 public:
 	int x;
 	int y;
-	Direction direction; // true if driving south or east, else false
+	Direction direction;
 	COLORREF color;
 
 	Car(int x, int y, Direction direction, COLORREF color);

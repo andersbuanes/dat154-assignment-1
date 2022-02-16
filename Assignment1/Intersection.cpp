@@ -31,4 +31,9 @@ void Intersection::ChangeLightState()
 
 	if (state == 4)
 		state = 0;
+
+	for (auto road : roads)
+	{
+		road.trafficLight.state = state;
+	}
 }

@@ -31,4 +31,8 @@ void Car::Move()
 void Car::DrawCar(HDC hdc, RECT &rc)
 {
 	Rect(&hdc, x, y, x +CAR_WIDTH, y + CAR_WIDTH, color);
+	// TODO remove state debug
+	WCHAR text[15];
+	wsprintf(text, _T("%d"), x);
+	TextOut(hdc, x, y, text, wcslen(text));
 }
