@@ -21,7 +21,7 @@
 
 #define IDM_ABOUT 104
 #define IDM_EXIT 105
-#define IDD_DIALOG1 1000
+#define IDD_DIALOG2 132
 
 // Global Variables:
 HINSTANCE hInst;                                // current instance
@@ -195,7 +195,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     switch (message)
     {
     case WM_CREATE:
-        DialogBox(hInst, MAKEINTRESOURCE(IDD_DIALOG1), hWnd, ProbabilityDialog);
+        DialogBox(hInst, MAKEINTRESOURCE(IDD_DIALOG2), hWnd, ProbabilityDialog);
     case WM_COMMAND:
         {
             int wmId = LOWORD(wParam);
@@ -204,6 +204,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             {
             case IDM_ABOUT:
                 DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
+                break;
+            case IDD_DIALOG2:
+                DialogBox(hInst, MAKEINTRESOURCE(IDD_DIALOG2), hWnd, ProbabilityDialog);
                 break;
             case IDM_EXIT:
                 DestroyWindow(hWnd);
@@ -428,16 +431,6 @@ INT_PTR CALLBACK ProbabilityDialog(HWND hDlg, UINT message, WPARAM wParam, LPARA
     {
     case WM_INITDIALOG:
     {
-        HWND hStaticText1 = GetDlgItem(hDlg, IDC_STATICTEXT1);
-        HWND hStaticText2 = GetDlgItem(hDlg, IDC_STATICTEXT2);
-        HWND hStaticText3 = GetDlgItem(hDlg, IDC_STATICTEXT3);
-        HWND hStaticText4 = GetDlgItem(hDlg, IDC_STATICTEXT4);
-        HWND hStaticText5 = GetDlgItem(hDlg, IDC_STATICTEXT5);
-        SetWindowText(hStaticText1, L"North (pn): (0-100)");
-        SetWindowText(hStaticText2, L"East (pe): (0-100)");
-        SetWindowText(hStaticText3, L"");
-        SetWindowText(hStaticText4, L"South (pso): (0-100)");
-        SetWindowText(hStaticText5, L"West (pw): (0-100)");
         return (INT_PTR)TRUE;
     }
     case WM_COMMAND:
