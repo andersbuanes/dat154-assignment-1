@@ -30,5 +30,5 @@ void Car::Move()
 
 void Car::DrawCar(HDC hdc, RECT &rc)
 {
-	Rect(&hdc, x, y, x +CAR_WIDTH, y + CAR_WIDTH, color);
+	Rect(&hdc, x, y, x + CAR_WIDTH, y + CAR_WIDTH, color);
 }

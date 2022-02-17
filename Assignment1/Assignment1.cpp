@@ -243,32 +243,38 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 std::random_device rd;                          // initialise seed
                 std::mt19937 rng(rd());                         // Mersenne-Twister random-number engine
                 std::uniform_int_distribution<int> p(0, 100);   // probability of spawn
-                //std::uniform_int_distribution<int> speed(3, 7); // car speed interval
+                std::uniform_real_distribution<float> speed(1, 2); // car speed interval
                 //std::uniform_int_distribution<int> lane(0, 1);  // car lane spawn
                 auto randNorth = p(rng);
                 auto randEast = p(rng);
                 auto randSouth = p(rng);
                 auto randWest = p(rng);
+                int x, y;
+                int padding = 2;
                 
                 if (randNorth <= pn)
                 {
-                    int x = (screensize.right / 2) - CAR_WIDTH;
-                    roadNorth.cars.push_front(Car(x, 10, SOUTH, RGB(rand() % 255, rand() % 255, rand() % 255)));
+                    x = (screensize.right / 2) - CAR_WIDTH - padding;
+                    y = 10;
+                    roadNorth.cars.push_front(Car(x, y, SOUTH, RGB(rand() % 255, rand() % 255, rand() % 255)));
                 }
                 if (randEast <= pe)
                 {
-                    int y = (screensize.bottom / 2) - CAR_HEIGHT;
-                    roadEast.cars.push_front(Car(screensize.right - 10, y, WEST, RGB(rand() % 255, rand() % 255, rand() % 255)));
+                    x = screensize.right - 10;
+                    y = (screensize.bottom / 2) - CAR_HEIGHT - padding;
+                    roadEast.cars.push_front(Car(x, y, WEST, RGB(rand() % 255, rand() % 255, rand() % 255)));
                 }
                 if (randSouth <= pso)
                 {
-                    int x = (screensize.right / 2) + CAR_WIDTH;
-                    roadSouth.cars.push_front(Car(x, screensize.bottom - 10, NORTH, RGB(rand() % 255, rand() % 255, rand() % 255)));
+                    x = (screensize.right / 2) + padding;
+                    y = screensize.bottom - 10;
+                    roadSouth.cars.push_front(Car(x, y, NORTH, RGB(rand() % 255, rand() % 255, rand() % 255)));
                 }
                 if (randWest <= pw)
                 {
-                    int y = (screensize.bottom / 2) + CAR_HEIGHT;
-                    roadWest.cars.push_front(Car(10, y, EAST, RGB(rand() % 255, rand() % 255, rand() % 255)));
+                    x = 10;
+                    y = (screensize.bottom / 2) + padding;
+                    roadWest.cars.push_front(Car(x, y, EAST, RGB(rand() % 255, rand() % 255, rand() % 255)));
                 }
                 break;
             }
@@ -307,6 +313,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             wsprintf(text, L"Probability north: %d%%\r\nProbability east: %d%%\r\nProbability south: %d%%\r\nProbability west: %d%%\r\n", pn, pe, pso, pw);
             DrawText(hdc, text, lstrlen(text), &rc, DT_LEFT);
 
+            // Transfer color data from virtual device context to physical device context
             BitBlt(phdc, 0, 0, rc.right, rc.bottom, hdc, 0, 0, SRCCOPY);
 
             DeleteObject(bg);
